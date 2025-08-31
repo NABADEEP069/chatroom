@@ -37,62 +37,78 @@ export default function Page() {
   };
 
   return (
-    <div className="relative max-w-lg mx-auto my-8 p-4 font-sans">
-      {/* GoogleGeminiEffect stays in background */}
+    <div className="relative flex flex-col md:flex-row h-screen mt-9">
+
+      
       <GoogleGeminiEffect
         pathLengths={[]}
         className="pointer-events-none absolute inset-0 z-0"
       />
 
-      {/* Content stays above */}
-      <div className="relative z-10">
-        <h1 className="mb-4 text-xl font-bold">Socket.IO Chat</h1>
-
-        {!joined ? (
-          <div className="grid gap-2">
-            <input
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="Choose a username"
-              className="p-2 rounded border border-gray-300"
-            />
-            <button
-              onClick={join}
-              className="p-2 rounded bg-blue-500 text-white hover:bg-blue-600"
-            >
-              Join
-            </button>
+      
+      <aside className="hidden md:flex md:w-48 p-6 flex-col items-start space-y-4 z-10 ">
+        <div className="flex items-center space-x-3">
+          <div className="w-8 h-8 grid grid-cols-3 gap-1">
+            {[...Array(9)].map((_, i) => (
+              <div
+                key={i}
+                className="w-1.5 h-1.5 bg-green-500 rounded-full"
+              ></div>
+            ))}
           </div>
-        ) : (
-          <>
-            <div className="border border-gray-200 rounded p-3 min-h-[240px] mb-3 overflow-y-auto bg-gray-50">
-              <ul className="list-none p-0 m-0 grid gap-1">
-                {messages.map((m, i) => (
-                  <li key={i} className="whitespace-pre-wrap break-words">
-                    {m}
-                  </li>
-                ))}
-              </ul>
-            </div>
+          <span className="text-lg font-medium text-green-500">Chatapp</span>
+        </div>
+      </aside>
 
-            <div className="grid grid-cols-[1fr_auto] gap-2">
+    
+      <main className="flex-1 flex items-center justify-center p-4 sm:p-6 z-10 mt-20">
+        <div className="w-full max-w-lg">
+          {!joined ? (
+            <div className="grid gap-2">
               <input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Type a message"
-                onKeyDown={(e) => (e.key === 'Enter' ? send() : undefined)}
-                className="p-2 rounded border border-gray-300"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Choose a username"
+                className="p-2 rounded border border-gray-300 w-full"
               />
               <button
-                onClick={send}
-                className="px-4 rounded bg-green-500 text-white hover:bg-green-600"
+                onClick={join}
+                className="p-2 rounded bg-green-500 text-black hover:bg-green-600 w-full"
               >
-                Send
+                Join
               </button>
             </div>
-          </>
-        )}
-      </div>
+          ) : (
+            <>
+              <div className="border border-gray-200 rounded p-3 min-h-[240px] mb-3 overflow-y-auto bg-gray-50">
+                <ul className="list-none p-0 m-0 grid gap-1">
+                  {messages.map((m, i) => (
+                    <li key={i} className="whitespace-pre-wrap break-words">
+                      {m}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="grid grid-cols-[1fr_auto] gap-2 mt-20">
+                <input
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="Type a message"
+                  onKeyDown={(e) => (e.key === 'Enter' ? send() : undefined)}
+                  className="p-2 rounded border border-gray-300"
+                />
+                <button
+                  onClick={send}
+                  className="px-4 rounded bg-green-500 text-white hover:bg-green-600"
+                >
+                  Send
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </main>
     </div>
   );
 }
