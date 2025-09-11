@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { Server as IOServer } from 'socket.io';
+import type { Server as HTTPServer } from 'http';
 import Trie from '../../lib/trie';
 import fs from 'fs';
 import path from 'path';
@@ -19,7 +20,8 @@ async function loadAbuses() {
     const words: string[] = await res.json();
     for (const w of words) trie.insert(w);
     console.log(`[abuse] Loaded ${words.length} remote words`);
-  } catch (e) {
+  } catch (_e) {
+    // fallback to local file if remote fetch fails
     const p = path.join(process.cwd(), 'abuses.json');
     const data = fs.readFileSync(p, 'utf-8');
     const words: string[] = JSON.parse(data);
@@ -31,17 +33,22 @@ async function loadAbuses() {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   await loadAbuses();
-  const socketWithServer = res.socket as typeof res.socket & { server: any };
+
+  const socketWithServer = res.socket as typeof res.socket & { server: SocketServerWithIO };
 
   if (!socketWithServer || !socketWithServer.server) {
     res.status(500).end('Socket server not available');
     return;
   }
 
-  const srv: SocketServerWithIO = socketWithServer.server as SocketServerWithIO;
+  const srv: SocketServerWithIO = socketWithServer.server;
+
   if (!srv.io) {
-    const io = new IOServer(socketWithServer.server, {
-      path: '/api/socket_io', 
+    // Cast Next.js server to Node HTTP server so Socket.IO works
+    const httpServer = socketWithServer.server as unknown as HTTPServer;
+
+    const io = new IOServer(httpServer, {
+      path: '/api/socket_io',
     });
     srv.io = io;
 
@@ -64,6 +71,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         io.emit('chat message', `lalala ${name} left the chat.`);
       });
     });
-      console.log('[socket] server initialized');
-    }
+
+    console.log('[socket] server initialized');
   }
+
+  res.end();
+}

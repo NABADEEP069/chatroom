@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { getSocket } from './socket-client';
 import { GoogleGeminiEffect } from '@/components/ui/google-gemini-effect';
 
@@ -9,6 +9,7 @@ export default function Page() {
   const [username, setUsername] = useState('');
   const [joined, setJoined] = useState(false);
   const [input, setInput] = useState('');
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     fetch('/api/socket').catch(() => {});
@@ -21,6 +22,12 @@ export default function Page() {
       s.off('chat message', onMsg);
     };
   }, []);
+
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
 
   const join = () => {
     if (!username.trim()) return;
@@ -38,15 +45,14 @@ export default function Page() {
 
   return (
     <div className="relative flex flex-col md:flex-row h-screen mt-9">
-
       
       <GoogleGeminiEffect
         pathLengths={[]}
         className="pointer-events-none absolute inset-0 z-0"
       />
 
-      
-      <aside className="hidden md:flex md:w-48 p-6 flex-col items-start space-y-4 z-10 ">
+ 
+      <aside className="hidden md:flex md:w-48 p-6 flex-col items-start space-y-4 z-10">
         <div className="flex items-center space-x-3">
           <div className="w-8 h-8 grid grid-cols-3 gap-1">
             {[...Array(9)].map((_, i) => (
@@ -60,11 +66,11 @@ export default function Page() {
         </div>
       </aside>
 
-    
-      <main className="flex-1 flex items-center justify-center p-4 sm:p-6 z-10 mt-20">
-        <div className="w-full max-w-lg">
+      
+      <main className="flex-1 flex items-center justify-center p-4 sm:p-6 z-10 mt-10 md:mt-20">
+        <div className="w-full max-w-lg flex flex-col h-full">
           {!joined ? (
-            <div className="grid gap-2">
+            <div className="grid gap-2 mt-auto">
               <input
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
@@ -80,7 +86,8 @@ export default function Page() {
             </div>
           ) : (
             <>
-              <div className="border border-gray-200 rounded p-3 min-h-[240px] mb-3 overflow-y-auto bg-gray-50">
+           
+              <div className="flex-1 border border-gray-200 rounded p-3 mb-2 overflow-y-auto bg-gray-50">
                 <ul className="list-none p-0 m-0 grid gap-1">
                   {messages.map((m, i) => (
                     <li key={i} className="whitespace-pre-wrap break-words">
@@ -88,9 +95,11 @@ export default function Page() {
                     </li>
                   ))}
                 </ul>
+                <div ref={messagesEndRef} />
               </div>
 
-              <div className="grid grid-cols-[1fr_auto] gap-2 mt-20">
+ 
+              <div className="grid grid-cols-[1fr_auto] gap-2 sticky bottom-0 bg-white p-2 border-t border-gray-200">
                 <input
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
